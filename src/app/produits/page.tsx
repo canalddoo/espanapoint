@@ -92,7 +92,7 @@ export default function ProductsPage() {
                 alt={product.name}
                 className="product-img"
                 loading="lazy"
-              />
+              /> 
             </div>
 
             <div className="product-info">
