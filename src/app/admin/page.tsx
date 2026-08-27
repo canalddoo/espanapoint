@@ -43,24 +43,23 @@ export default function AdminPage() {
   }, []);
 
   // Charger les données 
-  useEffect(() => {
-    if (!isAuthenticated) return;
-
-    async function fetchOrders() {
-      try {
-        const response = await fetch("/api/orders");
-        if (response.ok) {
-          const data = await response.json();
-          setOrders(data);
-        }
-      } catch (error) {
-        console.error("Error fetching orders:", error);
-      } finally {
-        setLoading(false);
+  // Charger les données bancaires au démarrage si authentifié
+  
+useEffect(() => {
+  if (!isAuthenticated) return;
+  fetch("/api/bank-details")
+    .then((res) => res.json())
+    .then((data) => {
+      if (data && !data.error) {
+        setBank({
+          beneficiary: data.beneficiary || "",
+          iban: data.iban || "",
+          bic: data.bic || ""
+        });
       }
-    }
-    fetchOrders();
-  }, [isAuthenticated]);
+    })
+    .catch(console.error);
+}, [isAuthenticated]);
 
   // Charger les statistiques de visites si authentifié
   useEffect(() => {
@@ -314,7 +313,7 @@ const handleBankUpdate = async (e: React.FormEvent) => {
                       <th className="text-center">Cantidad</th>
                       <th className="text-right">Subtotal</th>
                     </tr>
-                  </thead>
+                  </thead> 
                   <tbody>
                     {order.items?.map((item) => (
                       <tr key={item.id}>
