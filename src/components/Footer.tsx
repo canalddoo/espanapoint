@@ -16,7 +16,7 @@ export default function Footer() {
             28013 Madrid, España
           </p>
           <p className="footer-contact-info">
-            <strong>Teléfono:</strong> <a href="tel:+34666754415">+34 666 754 415</a><br />
+            <strong>Teléfono:</strong> <a href="tel:+4367858216163">+43 678 582 161 63</a><br />
             <strong>Email:</strong> <a href="mailto:contact@espanapoint.es">contact@espanapoint.es</a><br />
             <strong>CIF / NIF:</strong> B-88765432
           </p>

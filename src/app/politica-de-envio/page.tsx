@@ -112,7 +112,7 @@ export default function PoliticaEnvio() {
       <p>
         <strong>Email:</strong> contact@espanapoint.es
         <br />
-        <strong>Teléfono:</strong> +34 666 754 415
+        <strong>Teléfono:</strong> +43 678 582 161 63
       </p>
     </div>
   );
