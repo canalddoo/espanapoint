@@ -21,7 +21,7 @@ export default function PoliticaDevoluciones() {
       <h2>3. Procedimiento de Devolución</h2>
       <p>Para iniciar un proceso de devolución, siga estos pasos:</p>
       <ol>
-        <li>Contacte con nuestro servicio de atención al cliente en <strong>contact@espanapoint.es</strong> o llamando al <strong>+34 666 754 415</strong>.</li>
+        <li>Contacte con nuestro servicio de atención al cliente en <strong>contact@espanapoint.es</strong> o llamando al <strong>+34 684 797 526</strong>.</li>
         <li>Indique su número de pedido y el motivo de la devolución.</li>
         <li>Nuestro equipo le facilitará las instrucciones detalladas y la etiqueta/dirección de envío para la devolución.</li>
       </ol>

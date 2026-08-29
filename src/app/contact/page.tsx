@@ -99,8 +99,8 @@ export default function ContactPage() {
               </div>
               <div className="info-text">
                 <h3>Teléfono</h3>
-                <a href="tel:+4367858216163" className="info-link">
-                  +43 678 582 161 63
+                <a href="tel:+34684797526" className="info-link">
+                  +34 684 797 526
                 </a>
                 <p>Atención al cliente disponible de lunes a sábado.</p>
               </div>
