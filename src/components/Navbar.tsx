@@ -116,7 +116,7 @@ export default function Navbar() {
 
           {/* Número de teléfono a la derecha */}
           <div className="nav-phone">
-            <a href="tel:+34666754415">+34 666 754 415</a>
+            <a href="tel:+34684797526">+34 684 797 526</a>
           </div>
         </div>
       </div>
