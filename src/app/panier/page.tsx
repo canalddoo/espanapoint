@@ -197,7 +197,7 @@ export default function CartPage() {
 
             {/* Onglets de sélection */}
             <div style={{ display: "flex", gap: "8px", marginBottom: "15px" }}>
-              <button 
+              {/* <button 
                 onClick={() => setPaymentMethod("card")}
                 style={{ 
                   flex: 1, 
@@ -213,7 +213,7 @@ export default function CartPage() {
                 type="button"
               >
                 <i className="far fa-credit-card"></i> Tarjeta
-              </button>
+              </button> */}
               <button 
                 onClick={() => setPaymentMethod("bank")}
                 style={{ 
