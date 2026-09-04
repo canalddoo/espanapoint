@@ -16,6 +16,12 @@ interface Order {
   items: OrderItem[];
   total: number;
   status: string;
+  customerName?: string;
+  country?: string;
+  city?: string;
+  address?: string;
+  whatsapp?: string;
+  email?: string;
 }
 
 export default function AdminPage() {
@@ -42,7 +48,7 @@ export default function AdminPage() {
     }
   }, []);
 
-  // Charger les données 
+  // Charger les données des commandes
   useEffect(() => {
     if (!isAuthenticated) return;
 
@@ -141,31 +147,38 @@ export default function AdminPage() {
   };
 
   // Charger les données bancaires au démarrage si authentifié
-useEffect(() => {
-  if (!isAuthenticated) return;
-  fetch("/api/bank-details")
-    .then((res) => res.json())
-    .then((data) => setBank(data))
-    .catch(console.error);
-}, [isAuthenticated]);
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    fetch("/api/bank-details")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && !data.error) {
+          setBank({
+            beneficiary: data.beneficiary || "",
+            iban: data.iban || "",
+            bic: data.bic || ""
+          });
+        }
+      })
+      .catch(console.error);
+  }, [isAuthenticated]);
 
-const handleBankUpdate = async (e: React.FormEvent) => {
-  e.preventDefault();
-  setSavingBank(true);
-  try {
-    const res = await fetch("/api/bank-details", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(bank),
-    });
-    if (res.ok) alert("Datos bancarios actualizados correctamente.");
-  } catch (error) {
-    alert("Error al actualizar.");
-  } finally {
-    setSavingBank(false);
-  }
-};
-
+  const handleBankUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingBank(true);
+    try {
+      const res = await fetch("/api/bank-details", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(bank),
+      });
+      if (res.ok) alert("Datos bancarios actualizados correctamente.");
+    } catch (error) {
+      alert("Error al actualizar.");
+    } finally {
+      setSavingBank(false);
+    }
+  };
 
   // ÉCRAN DE CONNEXION (Si non authentifié)
   if (!isAuthenticated) {
@@ -210,72 +223,72 @@ const handleBankUpdate = async (e: React.FormEvent) => {
           Cerrar Sesión
         </button>
       </div>
+
       {/* SECTION STATISTIQUES DE VISITES */}
-<div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: "20px", marginBottom: "30px" }}>
-  
-  {/* Carte du Total */}
-  <div style={{ background: "#fff", padding: "20px", borderRadius: "8px", boxShadow: "0 2px 8px rgba(0,0,0,0.05)", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
-    <i className="fas fa-eye" style={{ fontSize: "32px", color: "#0070f3", marginBottom: "10px" }}></i>
-    <h3 style={{ margin: 0, color: "#666", fontSize: "14px", textTransform: "uppercase" }}>Visitas Totales</h3>
-    <strong style={{ fontSize: "36px", color: "#111", marginTop: "5px" }}>{stats.totalVisits}</strong>
-  </div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: "20px", marginBottom: "30px" }}>
+        {/* Carte du Total */}
+        <div style={{ background: "#fff", padding: "20px", borderRadius: "8px", boxShadow: "0 2px 8px rgba(0,0,0,0.05)", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
+          <i className="fas fa-eye" style={{ fontSize: "32px", color: "#0070f3", marginBottom: "10px" }}></i>
+          <h3 style={{ margin: 0, color: "#666", fontSize: "14px", textTransform: "uppercase" }}>Visitas Totales</h3>
+          <strong style={{ fontSize: "36px", color: "#111", marginTop: "5px" }}>{stats.totalVisits}</strong>
+        </div>
 
-  {/* Tableau/Liste des Pays */}
-  <div style={{ background: "#fff", padding: "20px", borderRadius: "8px", boxShadow: "0 2px 8px rgba(0,0,0,0.05)" }}>
-    <h3 style={{ margin: "0 0 15px 0", fontSize: "16px" }}><i className="fas fa-globe-americas"></i> Origen de los visitantes</h3>
-    <div style={{ maxHeight: "120px", overflowY: "auto" }}>
-      {stats.countriesStats.length === 0 ? (
-        <p style={{ color: "#888", fontSize: "14px" }}>No hay datos de visitas aún.</p>
-      ) : (
-        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "14px" }}>
-          <thead>
-            <tr style={{ borderBottom: "1px solid #eee", textAlign: "left", color: "#666" }}>
-              <th style={{ paddingBottom: "5px" }}>País / Código</th>
-              <th style={{ paddingBottom: "5px", textAlign: "right" }}>Visitas</th>
-            </tr>
-          </thead>
-          <tbody>
-            {stats.countriesStats.map((item, index) => (
-              <tr key={index} style={{ borderBottom: "1px solid #f9f9f9" }}>
-                <td style={{ padding: "6px 0", fontWeight: "500" }}>
-                  <span style={{ marginRight: "8px" }}>📍</span>
-                  {item.country === "Unknown" ? "Desconocido" : item.country}
-                </td>
-                <td style={{ padding: "6px 0", textAlign: "right", fontWeight: "bold", color: "#0070f3" }}>
-                  {item.count}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
-    </div>
-  </div>
+        {/* Tableau/Liste des Pays */}
+        <div style={{ background: "#fff", padding: "20px", borderRadius: "8px", boxShadow: "0 2px 8px rgba(0,0,0,0.05)" }}>
+          <h3 style={{ margin: "0 0 15px 0", fontSize: "16px" }}><i className="fas fa-globe-americas"></i> Origen de los visitantes</h3>
+          <div style={{ maxHeight: "120px", overflowY: "auto" }}>
+            {stats.countriesStats.length === 0 ? (
+              <p style={{ color: "#888", fontSize: "14px" }}>No hay datos de visitas aún.</p>
+            ) : (
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "14px" }}>
+                <thead>
+                  <tr style={{ borderBottom: "1px solid #eee", textAlign: "left", color: "#666" }}>
+                    <th style={{ paddingBottom: "5px" }}>País / Código</th>
+                    <th style={{ paddingBottom: "5px", textAlign: "right" }}>Visitas</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {stats.countriesStats.map((item, index) => (
+                    <tr key={index} style={{ borderBottom: "1px solid #f9f9f9" }}>
+                      <td style={{ padding: "6px 0", fontWeight: "500" }}>
+                        <span style={{ marginRight: "8px" }}>📍</span>
+                        {item.country === "Unknown" ? "Desconocido" : item.country}
+                      </td>
+                      <td style={{ padding: "6px 0", textAlign: "right", fontWeight: "bold", color: "#0070f3" }}>
+                        {item.count}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </div>
+      </div>
 
-</div>
-
-
+      {/* SECTION CONFIGURATION BANCAIRE */}
       <div style={{ background: "#fff", padding: "20px", borderRadius: "8px", boxShadow: "0 2px 8px rgba(0,0,0,0.05)", marginBottom: "30px" }}>
-  <h3><i className="fas fa-university"></i> Configuración de Cuenta Bancaria</h3>
-  <form onSubmit={handleBankUpdate} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr auto", gap: "15px", alignItems: "end", marginTop: "15px" }}>
-    <div>
-      <label style={{ display: "block", fontSize: "14px", marginBottom: "5px" }}>Beneficiario</label>
-      <input type="text" value={bank.beneficiary} onChange={(e) => setBank({ ...bank, beneficiary: e.target.value })} style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #ccc" }} required />
-    </div>
-    <div>
-      <label style={{ display: "block", fontSize: "14px", marginBottom: "5px" }}>IBAN</label>
-      <input type="text" value={bank.iban} onChange={(e) => setBank({ ...bank, iban: e.target.value })} style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #ccc" }} required />
-    </div>
-    <div>
-      <label style={{ display: "block", fontSize: "14px", marginBottom: "5px" }}>SWIFT / BIC</label>
-      <input type="text" value={bank.bic} onChange={(e) => setBank({ ...bank, bic: e.target.value })} style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #ccc" }} required />
-    </div>
-    <button type="submit" disabled={savingBank} style={{ padding: "10px 20px", background: "#2ecc71", color: "#fff", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold" }}>
-      {savingBank ? "Guardando..." : "Actualizar Cuenta"}
-    </button>
-  </form>
-</div>
+        <h3><i className="fas fa-university"></i> Configuración de Cuenta Bancaria</h3>
+        <form onSubmit={handleBankUpdate} style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr auto", gap: "15px", alignItems: "end", marginTop: "15px" }}>
+          <div>
+            <label style={{ display: "block", fontSize: "14px", marginBottom: "5px" }}>Beneficiario</label>
+            <input type="text" value={bank.beneficiary} onChange={(e) => setBank({ ...bank, beneficiary: e.target.value })} style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #ccc" }} required />
+          </div>
+          <div>
+            <label style={{ display: "block", fontSize: "14px", marginBottom: "5px" }}>IBAN</label>
+            <input type="text" value={bank.iban} onChange={(e) => setBank({ ...bank, iban: e.target.value })} style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #ccc" }} required />
+          </div>
+          <div>
+            <label style={{ display: "block", fontSize: "14px", marginBottom: "5px" }}>SWIFT / BIC</label>
+            <input type="text" value={bank.bic} onChange={(e) => setBank({ ...bank, bic: e.target.value })} style={{ width: "100%", padding: "8px", borderRadius: "4px", border: "1px solid #ccc" }} required />
+          </div>
+          <button type="submit" disabled={savingBank} style={{ padding: "10px 20px", background: "#2ecc71", color: "#fff", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold" }}>
+            {savingBank ? "Guardando..." : "Actualizar Cuenta"}
+          </button>
+        </form>
+      </div>
 
+      {/* SECTION LISTE DES COMMANDES */}
       {orders.length === 0 ? (
         <div className="admin-empty-state">
           <i className="fas fa-inbox admin-empty-icon"></i>
@@ -300,6 +313,27 @@ const handleBankUpdate = async (e: React.FormEvent) => {
                   <span className={`admin-status-pill status-${order.status.toLowerCase().replace(/\s+/g, "-")}`}>
                     {order.status}
                   </span>
+                </div>
+              </div>
+
+              {/* COORDONNÉES DU CLIENT / LIVRAISON */}
+              <div style={{ background: "#f8f9fa", padding: "12px 15px", borderRadius: "6px", margin: "15px 0", borderLeft: "4px solid #0070f3" }}>
+                <h4 style={{ margin: "0 0 8px 0", fontSize: "14px", color: "#333" }}>
+                  <i className="fas fa-user-tag" style={{ marginRight: "6px" }}></i> Datos del Cliente y Envío
+                </h4>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "10px", fontSize: "13px", color: "#555" }}>
+                  <div><strong>Cliente:</strong> {order.customerName || "No especificado"}</div>
+                  <div><strong>Email:</strong> {order.email || "N/A"}</div>
+                  <div>
+                    <strong>WhatsApp:</strong>{" "}
+                    {order.whatsapp ? (
+                      <a href={`https://wa.me/${order.whatsapp.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" style={{ color: "#25D366", fontWeight: "bold", textDecoration: "none" }}>
+                        {order.whatsapp} <i className="fab fa-whatsapp"></i>
+                      </a>
+                    ) : "N/A"}
+                  </div>
+                  <div><strong>Ubicación:</strong> {order.city ? `${order.city}, ${order.country}` : "N/A"}</div>
+                  <div style={{ gridColumn: "1 / -1" }}><strong>Dirección:</strong> {order.address || "N/A"}</div>
                 </div>
               </div>
 

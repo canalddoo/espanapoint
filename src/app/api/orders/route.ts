@@ -2,14 +2,12 @@ import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { orders, orderItems } from "@/db/schema";
 import { desc, eq } from "drizzle-orm";
- 
-// GET : Récupérer toutes les commandes avec leurs articles respectifs
+
+// GET : Récupérer toutes les commandes avec les infos client
 export async function GET() {
   try {
-    // 1. Récupérer d'abord toutes les commandes triées par date décroissante
     const dbOrders = await db.select().from(orders).orderBy(desc(orders.date));
 
-    // 2. Associer manuellement les articles correspondants à chaque commande
     const result = await Promise.all(
       dbOrders.map(async (order) => {
         const items = await db
@@ -19,7 +17,7 @@ export async function GET() {
           
         return {
           ...order,
-          items, // Tableau d'articles injecté pour la page admin
+          items,
         };
       })
     );
@@ -28,19 +26,18 @@ export async function GET() {
   } catch (error) {
     console.error("Error en GET /api/orders:", error);
     return NextResponse.json(
-      { error: "Error al recuperar los pedidos de la base de datos" },
+      { error: "Error al recuperar los pedidos" },
       { status: 500 }
     );
   }
 }
 
-// POST : Créer une nouvelle commande reçue depuis le panier
+// POST : Créer une commande avec les données de livraison
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { id, date, total, items } = body;
+    const { id, date, total, items, customerName, country, city, address, whatsapp, email } = body;
 
-    // Validation simple des données reçues
     if (!id || total === undefined || !items || items.length === 0) {
       return NextResponse.json(
         { error: "Datos incompletos para procesar el pedido" },
@@ -48,15 +45,21 @@ export async function POST(req: Request) {
       );
     }
 
-    // 1. Insérer la commande principale
+    // Insérer la commande avec les coordonnées client
     await db.insert(orders).values({
       id,
       date,
       total,
       status: "Pendiente de pago",
+      customerName: customerName || "",
+      country: country || "",
+      city: city || "",
+      address: address || "",
+      whatsapp: whatsapp || "",
+      email: email || "",
     });
 
-    // 2. Insérer tous les articles rattachés à cette commande
+    // Insérer les articles
     for (const item of items) {
       await db.insert(orderItems).values({
         orderId: id,
@@ -73,7 +76,7 @@ export async function POST(req: Request) {
   } catch (error) {
     console.error("Error en POST /api/orders:", error);
     return NextResponse.json(
-      { error: "Error al crear el pedido en la base de datos" },
+      { error: "Error al crear el pedido" },
       { status: 500 }
     );
   }

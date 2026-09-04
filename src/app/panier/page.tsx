@@ -5,31 +5,38 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
-// Imports Stripe requis
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements } from "@stripe/react-stripe-js";
 import StripeCheckoutForm from "@/components/StripeCheckoutForm";
 
-// Initialisation de Stripe avec ta clé publique (hors du composant pour éviter les rechargements)
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY as string);
 
 export default function CartPage() {
   const { cart, clearCart, updateQuantity, removeFromCart } = useCart() as any;
-  const [showSuccessPopup, setShowSuccessPopup] = useState(false); // Étape 1 : Commande reçue
-  const [showPaymentModal, setShowPaymentModal] = useState(false); // Étape 2 : Choix du paiement
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [currentOrderRef, setCurrentOrderRef] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false); 
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
-  // États pour Stripe et les méthodes de paiement
-  const [paymentMethod, setPaymentMethod] = useState<"card" | "bank" | null>(null);
+  // Formulaire d'informations client
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    country: "",
+    city: "",
+    address: "",
+    whatsapp: "",
+    email: "",
+  });
+
+  const [paymentMethod, setPaymentMethod] = useState<"card" | "bank" | null>("bank");
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [bankInfo, setBankInfo] = useState({ beneficiary: "Cargando...", iban: "Cargando...", bic: "Cargando..." });
   const [showEmailPromptPopup, setShowEmailPromptPopup] = useState(false);
 
   const totalPrice = cart.reduce((acc: number, item: any) => acc + item.price * item.quantity, 0);
 
-  // Charger les données bancaires au cas où le client choisit le virement
   useEffect(() => {
     fetch("/api/bank-details")
       .then((res) => res.json())
@@ -39,7 +46,12 @@ export default function CartPage() {
       .catch(console.error);
   }, []);
 
-  const handleCheckout = async () => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleCheckout = async (e: React.FormEvent) => {
+    e.preventDefault();
     if (isSubmitting) return;
     setIsSubmitting(true);
 
@@ -50,11 +62,16 @@ export default function CartPage() {
       id: orderRef,
       date: new Date().toLocaleString("es-ES"),
       items: cart,
-      total: totalPrice
+      total: totalPrice,
+      customerName: `${formData.firstName} ${formData.lastName}`.trim(),
+      country: formData.country,
+      city: formData.city,
+      address: formData.address,
+      whatsapp: formData.whatsapp,
+      email: formData.email,
     };
 
     try {
-      // 1. Envoi de la commande à l'admin (Sauvegarde dans Turso)
       const response = await fetch("/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -62,7 +79,6 @@ export default function CartPage() {
       });
 
       if (response.ok) {
-        // 2. Demander un ticket de paiement (Client Secret) à notre route API Stripe
         const stripeRes = await fetch("/api/create-payment-intent", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -74,7 +90,6 @@ export default function CartPage() {
           setClientSecret(stripeData.clientSecret);
         }
 
-        // Étape 3 : Afficher le premier popup de succès
         setShowSuccessPopup(true);
       } else {
         alert("Hubo un error al procesar el pedido en el servidor.");
@@ -89,11 +104,10 @@ export default function CartPage() {
 
   const handleProceedToPaymentType = () => {
     setShowSuccessPopup(false);
-    setShowPaymentModal(true); // Ouvre le grand modal de sélection de paiement
+    setShowPaymentModal(true);
   };
 
   const handlePaymentSuccess = () => {
-    // Ouvre le popup d'envoi d'e-mail et ferme le modal de sélection de paiement
     setShowPaymentModal(false);
     setShowEmailPromptPopup(true);
   };
@@ -121,6 +135,7 @@ export default function CartPage() {
     <div className="cart-page-container">
       <h1 className="page-title">Mi Carrito ({cart.length})</h1>
       <div className="cart-content-wrapper">
+        
         {/* Liste des produits */}
         <div className="cart-items-list">
           {cart.map((item: any) => (
@@ -148,20 +163,62 @@ export default function CartPage() {
           ))}
         </div>
 
-        {/* Panneau de résumé de commande */}
+        {/* Panneau latéral : Formulaire de livraison + Résumé */}
         <div className="cart-summary-card">
-          <h3>Resumen del pedido</h3>
-          <div className="summary-row"><span>Subtotal</span><span>{totalPrice.toLocaleString()} €</span></div>
-          <div className="summary-row"><span>Envío</span><span className="free-shipping">Gratis</span></div>
-          <div className="summary-divider"></div>
-          <div className="summary-row total-row"><span>Total</span><span>{totalPrice.toLocaleString()} €</span></div>
-          <button className="btn-checkout" onClick={handleCheckout} disabled={isSubmitting} type="button">
-            {isSubmitting ? "Procesando..." : "Tramitar pedido"}
-          </button>
+          <form onSubmit={handleCheckout}>
+            <h3 className="checkout-section-title"><i className="fas fa-truck"></i> Datos de Envío</h3>
+            
+            <div className="form-grid">
+              <div className="form-group">
+                <label>Nombre *</label>
+                <input type="text" name="firstName" required value={formData.firstName} onChange={handleInputChange} placeholder="Juan" />
+              </div>
+
+              <div className="form-group">
+                <label>Apellidos *</label>
+                <input type="text" name="lastName" required value={formData.lastName} onChange={handleInputChange} placeholder="Pérez" />
+              </div>
+
+              <div className="form-group">
+                <label>País *</label>
+                <input type="text" name="country" required value={formData.country} onChange={handleInputChange} placeholder="España" />
+              </div>
+
+              <div className="form-group">
+                <label>Ciudad *</label>
+                <input type="text" name="city" required value={formData.city} onChange={handleInputChange} placeholder="Madrid" />
+              </div>
+
+              <div className="form-group full-width">
+                <label>Dirección exacta *</label>
+                <input type="text" name="address" required value={formData.address} onChange={handleInputChange} placeholder="Calle Gran Vía 28, 3ºB" />
+              </div>
+
+              <div className="form-group">
+                <label>WhatsApp / Teléfono *</label>
+                <input type="tel" name="whatsapp" required value={formData.whatsapp} onChange={handleInputChange} placeholder="+34 600 000 000" />
+              </div>
+
+              <div className="form-group">
+                <label>Correo electrónico *</label>
+                <input type="email" name="email" required value={formData.email} onChange={handleInputChange} placeholder="juan@ejemplo.com" />
+              </div>
+            </div>
+
+            <h3 className="checkout-section-title" style={{ marginTop: "20px" }}><i className="fas fa-file-invoice"></i> Resumen del pedido</h3>
+            <div className="summary-row"><span>Subtotal</span><span>{totalPrice.toLocaleString()} €</span></div>
+            <div className="summary-row"><span>Envío</span><span className="free-shipping">Gratis</span></div>
+            <div className="summary-divider"></div>
+            <div className="summary-row total-row"><span>Total</span><span>{totalPrice.toLocaleString()} €</span></div>
+            
+            <button className="btn-checkout" type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Procesando..." : "Tramitar pedido"}
+            </button>
+          </form>
         </div>
       </div>
 
-      {/* 1. POPUP DE SUCCÈS (COMMANDE ENREGISTRÉE) */}
+      {/* POPUPS DE MODAL */}
       {showSuccessPopup && (
         <div className="payment-modal-overlay" style={{ zIndex: 9999 }}>
           <div className="payment-modal-card" style={{ textAlign: "center", padding: "40px 30px" }}>
@@ -184,7 +241,6 @@ export default function CartPage() {
         </div>
       )}
 
-      {/* 2. LE GRAND MODAL DE PAIEMENT (STRIPE OU VIREMENT) */}
       {showPaymentModal && (
         <div className="payment-modal-overlay" style={{ zIndex: 9998 }}>
           <div className="payment-modal-card" style={{ maxWidth: "450px", padding: "20px" }}>
@@ -195,25 +251,7 @@ export default function CartPage() {
               </p>
             </div>
 
-            {/* Onglets de sélection */}
             <div style={{ display: "flex", gap: "8px", marginBottom: "15px" }}>
-              {/* <button 
-                onClick={() => setPaymentMethod("card")}
-                style={{ 
-                  flex: 1, 
-                  padding: "8px 10px", 
-                  fontSize: "14px", 
-                  borderRadius: "6px", 
-                  border: "2px solid", 
-                  borderColor: paymentMethod === "card" ? "#0070f3" : "#ccc", 
-                  background: paymentMethod === "card" ? "#f0f7ff" : "#fff", 
-                  cursor: "pointer", 
-                  fontWeight: "bold" 
-                }}
-                type="button"
-              >
-                <i className="far fa-credit-card"></i> Tarjeta
-              </button> */}
               <button 
                 onClick={() => setPaymentMethod("bank")}
                 style={{ 
@@ -221,9 +259,8 @@ export default function CartPage() {
                   padding: "8px 10px", 
                   fontSize: "14px", 
                   borderRadius: "6px", 
-                  border: "2px solid", 
-                  borderColor: paymentMethod === "bank" ? "#0070f3" : "#ccc", 
-                  background: paymentMethod === "bank" ? "#f0f7ff" : "#fff", 
+                  border: "2px solid #0070f3", 
+                  background: "#f0f7ff", 
                   cursor: "pointer", 
                   fontWeight: "bold" 
                 }}
@@ -233,16 +270,6 @@ export default function CartPage() {
               </button>
             </div>
 
-            {/* CONTENU OPTION 1 : FORMULAIRE STRIPE */}
-            {paymentMethod === "card" && clientSecret && (
-              <div style={{ background: "#f9f9f9", padding: "15px", borderRadius: "8px", border: "1px solid #eee" }}>
-                <Elements stripe={stripePromise} options={{ clientSecret }}>
-                  <StripeCheckoutForm orderId={currentOrderRef} onSuccess={handlePaymentSuccess} />
-                </Elements>
-              </div>
-            )}
-
-            {/* CONTENU OPTION 2 : VIREMENT BANCAIRE */}
             {paymentMethod === "bank" && (
               <div>
                 <div className="payment-modal-details" style={{ marginTop: "10px" }}>
@@ -265,7 +292,6 @@ export default function CartPage() {
         </div>
       )}
 
-      {/* 3. POPUP DE CONFIRMATION ET D'ENVOI D'E-MAIL APRÈS PAIEMENT */}
       {showEmailPromptPopup && (
         <div className="payment-modal-overlay" style={{ zIndex: 9999 }}>
           <div className="payment-modal-card" style={{ textAlign: "center", padding: "40px 30px", maxWidth: "450px" }}>
@@ -277,33 +303,17 @@ export default function CartPage() {
               Para agilizar el procesamiento y envío de su pedido <strong>#{currentOrderRef}</strong>, haga clic en el botón de abajo para enviarnos una confirmación a <strong>contact@espanapoint.es</strong>.
             </p>
             
-            {/* Bouton d'envoi de mail pré-rempli */}
             <a 
               href={`mailto:contact@espanapoint.es?subject=Confirmación de Pago - Pedido %23${currentOrderRef}&body=Hola Espanapoint,%0D%0A%0D%0AHe realizado correctamente el pago con tarjeta para mi pedido %23${currentOrderRef}.%0D%0A%0D%0AUn saludo.`}
               className="btn-see-more"
-              style={{ 
-                display: "inline-flex", 
-                width: "100%", 
-                marginBottom: "12px", 
-                textDecoration: "none",
-                boxSizing: "border-box"
-              }}
+              style={{ display: "inline-flex", width: "100%", marginBottom: "12px", textDecoration: "none", boxSizing: "border-box" }}
             >
               Enviar Correo de Confirmación <i className="fas fa-paper-plane" style={{ marginLeft: "10px" }}></i>
             </a>
 
-            {/* Lien secondaire pour finaliser */}
             <button
               onClick={handleFinalizeOrder}
-              style={{
-                background: "none",
-                border: "none",
-                color: "#0070f3",
-                cursor: "pointer",
-                fontSize: "14px",
-                fontWeight: "500",
-                textDecoration: "underline"
-              }}
+              style={{ background: "none", border: "none", color: "#0070f3", cursor: "pointer", fontSize: "14px", fontWeight: "500", textDecoration: "underline" }}
               type="button"
             >
               Volver a la tienda

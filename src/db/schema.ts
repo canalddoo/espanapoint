@@ -2,18 +2,23 @@ import { sqliteTable, text, integer, real } from "drizzle-orm/sqlite-core";
 
 // Table principale des Commandes (Orders)
 export const orders = sqliteTable("orders", {
-  id: text("id").primaryKey(), // L'identifiant unique (ex: "123456")
-  date: text("date").notNull(), // La date au format texte
-  total: real("total").notNull(), // Le prix total de la commande
-  status: text("status").notNull().default("Pendiente de pago"), // Statut en espagnol
+  id: text("id").primaryKey(),
+  date: text("date").notNull(),
+  total: real("total").notNull(),
+  status: text("status").notNull().default("Pendiente de pago"),
+  customerName: text("customer_name").default(""),
+  country: text("country").default(""),
+  city: text("city").default(""),
+  address: text("address").default(""),
+  whatsapp: text("whatsapp").default(""),
+  email: text("email").default(""),
 });
 
-// Table de liaison pour les articles de la commande (Order Items)
 export const orderItems = sqliteTable("order_items", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   orderId: text("order_id")
     .notNull()
-    .references(() => orders.id, { onDelete: "cascade" }), // Lié à la commande principale
+    .references(() => orders.id, { onDelete: "cascade" }),
   productId: integer("product_id").notNull(),
   name: text("name").notNull(),
   price: real("price").notNull(),
@@ -22,14 +27,12 @@ export const orderItems = sqliteTable("order_items", {
   image: text("image").notNull(),
 });
 
-
 export const bankDetails = sqliteTable("bank_details", {
-  id: integer("id").primaryKey(), // Un identifiant unique (valeur fixe 1)
+  id: integer("id").primaryKey(),
   beneficiary: text("beneficiary").notNull(),
   iban: text("iban").notNull(),
   bic: text("bic").notNull(),
 });
-
 
 export const visits = sqliteTable("visits", {
   id: integer("id").primaryKey({ autoIncrement: true }),
