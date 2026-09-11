@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import "./globals.css";
 import "./layout.css";
 import Navbar from "@/components/Navbar";
@@ -118,6 +119,21 @@ export default function RootLayout({
       </head>
 
       <body>
+        {/* Google Tag (gtag.js) */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=AW-17389379161"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'AW-17389379161');
+          `}
+        </Script>
+
         <CartProvider>
           <Navbar />
           <main>{children}</main>
