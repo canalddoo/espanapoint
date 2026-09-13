@@ -7,8 +7,10 @@ import { Suspense, useState, useEffect } from "react";
 import ContactPage from "./contact/page";
 
 
-const PRODUCTS_DATA = [
-  
+export const PRODUCTS_DATA = [
+  // ==========================================
+  // DISPOSITIVOS ELECTRÓNICOS & VIDEOJUEGOS (14 Productos)
+  // ==========================================
   { id: 1, name: "iPhone 13 Pro Max (Reacondicionado)", price: 331.99, category: "Dispositivos electrónicos", image: "https://c0.lestechnophiles.com/images.frandroid.com/wp-content/uploads/2021/09/apple-iphone-13-pro-max-frandroid-2021-768x768.png?webp=1&key=33af98cc" },
   { id: 2, name: "iPhone 15 Pro Max (Reacondicionado)", price: 521.99, category: "Dispositivos electrónicos", image: "https://c0.lestechnophiles.com/images.frandroid.com/wp-content/uploads/2023/09/iphone-15-pro-max-768x768.png?webp=1&key=6d7ed62f" },
   { id: 3, name: "Apple iPhone 16 (128 GB) (Reacondicionado) - Cian + Funda Transparente con MagSafe", price: 671.99, category: "Dispositivos electrónicos", image: "/img/iPhone16.jpg" },
@@ -44,16 +46,25 @@ const PRODUCTS_DATA = [
   { id: 25, name: "Cepillo secador y moldeador TYMO - Secador y cepillo iónico «One-Step»", price: 48.00, category: "Belleza y cuidado personal", image: "/img/TYMOBrosse.jpg" },
 
   // ==========================================
-  // HOGAR & COCINA (5 Productos)
+  // HOGAR & COCINA (15 Productos)
   // ==========================================
   { id: 26, name: "Ninja Foodi FlexDrawer Freidora de Aire, Dual Zone Con Separador Extraíble", price: 151.00, category: "Cocina", image: "/img/NinjaFoodiFlexDrawerAir.jpg" },
   { id: 27, name: "ECOVACS T50 Omni GEN2 Robot Aspirador con Estación, Potencia de 21000 Pa", price: 271.00, category: "Hogar", image: "/img/ECOVACST50OmniGEN2Aspirateur.jpg" },
   { id: 28, name: "DREAME H15 Pro CarpetFlex aspiradora inalámbrica con mopa", price: 361.00, category: "Hogar", image: "/img/DREAMEH15Pro.jpg" },
   { id: 29, name: "Cámara de vigilancia EZVIZ C8c 4K WiFi para exteriores de 360°", price: 72.00, category: "Hogar", image: "/img/EZVIZC8c4K.jpg" },
-  { id: 30, name: "GASLAND GIH604BF Placa Mixta de Gas e Inducción 60 cm", price: 341.00, category: "Cocina", image: "/img/GASLANDGIH604BF.jpg" }
+  { id: 30, name: "GASLAND GIH604BF Placa Mixta de Gas e Inducción 60 cm", price: 341.00, category: "Cocina", image: "/img/GASLANDGIH604BF.jpg" },
 
+  // --- NUEVOS PRODUCTOS AÑADIDOS DE LA LISTA ---
+  { id: 31, name: "Google Pixel 10 Pro XL – Smartphone Android libre con Gemini, triple cámara trasera", price: 929.00, category: "Dispositivos electrónicos", image: "/img/GooglePixel10ProXL.jpg" },
+  { id: 32, name: "Cosori TurboBlaze - Freidora de aire, 9 en 1, 6 cuartos de galón", price: 85.00, category: "Cocina", image: "/img/CosoriTurboBlaze.jpg" },
+  { id: 33, name: "Cámara para exteriores WiFi 360° MERCUSYS 2K, MC510", price: 28.00, category: "Hogar", image: "/img/MERCUSYS2K.jpg" },
+  { id: 34, name: "TP-Link Tapo - Cámara de seguridad interior de 1080P para monitor de bebé", price: 9.00, category: "Hogar", image: "/img/TP-LinkTapo.jpg" },
+  { id: 35, name: "Ninja Cafetera programable de 12 tazas, 2 estilos de preparación", price: 199.99, category: "Cocina", image: "/img/NinjaCafetera.jpg" },
+  { id: 36, name: "Aspiradora escoba inalámbrica Roborock H60 Ultra, 210 AW", price: 129.00, category: "Hogar", image: "/img/roborockH60Ultra.jpg" },
+  { id: 37, name: "Bissell PowerClean FurGuard 280W Aspiradora inalámbrica", price: 221.99, category: "Hogar", image: "/img/BissellPowerClean.jpg" },
+  { id: 38, name: "HORION Roku TV 40 QLED Smart FHD Televisión con Quantum Dot Color", price: 179.00, category: "Hogar", image: "/img/TV4K.jpg" },
+  { id: 39, name: "Mini refrigerador retro de 3.5 pies cúbicos con congelador, azul", price: 79.00, category: "Hogar", image: "/img/Minirefrigerador.jpg" }
 ];
-
 export function HomePageContent() {
   const { addToCart } = useCart();
   const router = useRouter();
