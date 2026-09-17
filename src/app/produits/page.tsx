@@ -1,12 +1,10 @@
 "use client";
- 
+
 import { useState, useMemo } from "react";
 import { useCart } from "@/context/CartContext";
 import { useRouter } from "next/navigation";
 import { PRODUCTS_DATA } from "@/lib/products";
-
-
-
+import Link from "next/link";
 
 export default function ProductsPage() {
   const { addToCart } = useCart();
@@ -16,13 +14,20 @@ export default function ProductsPage() {
   const [categoryFilter, setCategoryFilter] = useState("Todos");
   const [sortBy, setSortBy] = useState("default");
 
-  const handleBuyNow = (product: typeof PRODUCTS_DATA[0]) => {
+  const handleBuyNow = (product: (typeof PRODUCTS_DATA)[0]) => {
     addToCart(product);
     router.push("/panier");
   };
 
   // Lista de categorías únicas dinámicas en español
-  const categories = ["Todos", "Dispositivos electrónicos", "Deporte / Fitness", "Belleza y cuidado personal", "Cocina", "Hogar"];
+  const categories = [
+    "Todos",
+    "Dispositivos electrónicos",
+    "Deporte / Fitness",
+    "Belleza y cuidado personal",
+    "Cocina",
+    "Hogar",
+  ];
 
   // Filtrar y ordenar la lista de productos de manera eficiente
   const filteredAndSortedProducts = useMemo(() => {
@@ -53,23 +58,25 @@ export default function ProductsPage() {
       <div className="catalog-controls">
         <div className="control-group">
           <label htmlFor="category-select">Categoría:</label>
-          <select 
+          <select
             id="category-select"
-            value={categoryFilter} 
+            value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
             className="filter-select"
           >
             {categories.map((cat) => (
-              <option key={cat} value={cat}>{cat}</option>
+              <option key={cat} value={cat}>
+                {cat}
+              </option>
             ))}
           </select>
         </div>
 
         <div className="control-group">
           <label htmlFor="sort-select">Ordenar por:</label>
-          <select 
+          <select
             id="sort-select"
-            value={sortBy} 
+            value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
             className="filter-select"
           >
@@ -85,40 +92,45 @@ export default function ProductsPage() {
       <div className="products-grid">
         {filteredAndSortedProducts.map((product) => (
           <div key={product.id} className="product-card">
-            
-            <div className="product-image-wrapper">
-              <img 
-                src={product.image} 
-                alt={product.name}
-                className="product-img"
-                loading="lazy"
-              /> 
-            </div>
-
-            <div className="product-info">
-              <span className="product-cat">{product.category}</span>
-              <h3 className="product-name">{product.name}</h3>
-              <p className="product-price">{product.price.toLocaleString()} €</p>
-              
-              <div className="product-card-actions">
-                <button 
-                  onClick={() => addToCart(product)} 
-                  className="btn-add-cart"
-                  title="Añadir al carrito"
-                  type="button"
-                >
-                  <i className="fas fa-shopping-basket"></i> +
-                </button>
-                <button 
-                  onClick={() => handleBuyNow(product)} 
-                  className="btn-buy-now"
-                  type="button"
-                >
-                  Tramitar pedido
-                </button>
+            <Link
+              href={`/produits/${product.id}`}
+              className="product-card-link"
+            >
+              <div className="product-image-wrapper">
+                <img
+                  src={product.image}
+                  alt={product.name}
+                  className="product-img"
+                  loading="lazy"
+                />
               </div>
-            </div>
 
+              <div className="product-info">
+                <span className="product-cat">{product.category}</span>
+                <h3 className="product-name">{product.name}</h3>
+                <p className="product-price">
+                  {product.price.toLocaleString()} €
+                </p>
+              </div>
+            </Link>
+
+            <div className="product-card-actions">
+              <button
+                onClick={() => addToCart(product)}
+                className="btn-add-cart"
+                title="Añadir al carrito"
+                type="button"
+              >
+                <i className="fas fa-shopping-basket"></i> +
+              </button>
+              <button
+                onClick={() => handleBuyNow(product)}
+                className="btn-buy-now"
+                type="button"
+              >
+                Tramitar pedido
+              </button>
+            </div>
           </div>
         ))}
       </div>
@@ -130,9 +142,6 @@ export default function ProductsPage() {
           <p>No hay artículos disponibles en esta categoría actualmente.</p>
         </div>
       )}
-
- 
-   
     </div>
   );
 }
